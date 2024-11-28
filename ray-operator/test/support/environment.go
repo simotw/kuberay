@@ -2,6 +2,8 @@ package support
 
 import (
 	"os"
+	"runtime"
+	"strings"
 )
 
 const (
@@ -20,7 +22,14 @@ func GetRayVersion() string {
 }
 
 func GetRayImage() string {
-	return lookupEnvOrDefault(KuberayTestRayImage, RayImage)
+	rayImage := lookupEnvOrDefault(KuberayTestRayImage, RayImage)
+	// detect if we are running on arm64 machine, most likely apple silicon
+	// the os name is not checked as it also possible that it might be linux
+	// also check if the image does not have the `-aarch64` suffix
+	if runtime.GOARCH == "arm64" && !strings.HasSuffix(rayImage, "-aarch64") {
+		rayImage = rayImage + "-aarch64"
+	}
+	return rayImage
 }
 
 func lookupEnvOrDefault(key, value string) string {
