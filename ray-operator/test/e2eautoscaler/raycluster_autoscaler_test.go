@@ -1,14 +1,15 @@
 package e2eautoscaler
 
 import (
-	. "github.com/onsi/gomega"
 	"testing"
+
+	. "github.com/onsi/gomega"
+	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 
 	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
 	"github.com/ray-project/kuberay/ray-operator/controllers/ray/common"
 	rayv1ac "github.com/ray-project/kuberay/ray-operator/pkg/client/applyconfiguration/ray/v1"
 	. "github.com/ray-project/kuberay/ray-operator/test/support"
-	corev1ac "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 var tests = map[string]struct {

@@ -2,6 +2,7 @@ package e2eautoscaler
 
 import (
 	"embed"
+
 	"github.com/stretchr/testify/assert"
 
 	corev1 "k8s.io/api/core/v1"
