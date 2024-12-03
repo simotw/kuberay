@@ -13,17 +13,14 @@ import (
 )
 
 var tests = map[string]struct {
-	RayVersionGetter        func() string
 	HeadPodTemplateGetter   func() *corev1ac.PodTemplateSpecApplyConfiguration
 	WorkerPodTemplateGetter func() *corev1ac.PodTemplateSpecApplyConfiguration
 }{
 	"Create a RayCluster with autoscaling enabled": {
-		RayVersionGetter:        GetRayVersion,
 		HeadPodTemplateGetter:   headPodTemplateApplyConfiguration,
 		WorkerPodTemplateGetter: workerPodTemplateApplyConfiguration,
 	},
 	"Create a RayCluster with autoscaler v2 enabled": {
-		RayVersionGetter:        GetRayVersionForAutoScalerV2,
 		HeadPodTemplateGetter:   headPodTemplateApplyConfigurationV2,
 		WorkerPodTemplateGetter: workerPodTemplateApplyConfigurationV2,
 	},
@@ -47,7 +44,7 @@ func TestRayClusterAutoscaler(t *testing.T) {
 		test.T().Run(name, func(_ *testing.T) {
 			rayClusterSpecAC := rayv1ac.RayClusterSpec().
 				WithEnableInTreeAutoscaling(true).
-				WithRayVersion(tc.RayVersionGetter()).
+				WithRayVersion(GetRayVersion()).
 				WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
 					WithRayStartParams(map[string]string{"num-cpus": "0"}).
 					WithTemplate(tc.HeadPodTemplateGetter())).
@@ -117,7 +114,7 @@ func TestRayClusterAutoscalerWithFakeGPU(t *testing.T) {
 		test.T().Run(name, func(_ *testing.T) {
 			rayClusterSpecAC := rayv1ac.RayClusterSpec().
 				WithEnableInTreeAutoscaling(true).
-				WithRayVersion(tc.RayVersionGetter()).
+				WithRayVersion(GetRayVersion()).
 				WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
 					WithRayStartParams(map[string]string{"num-cpus": "0"}).
 					WithTemplate(tc.HeadPodTemplateGetter())).
@@ -181,7 +178,7 @@ func TestRayClusterAutoscalerWithCustomResource(t *testing.T) {
 
 			rayClusterSpecAC := rayv1ac.RayClusterSpec().
 				WithEnableInTreeAutoscaling(true).
-				WithRayVersion(tc.RayVersionGetter()).
+				WithRayVersion(GetRayVersion()).
 				WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
 					WithRayStartParams(map[string]string{"num-cpus": "0"}).
 					WithTemplate(tc.HeadPodTemplateGetter())).

@@ -22,29 +22,7 @@ func GetRayVersion() string {
 }
 
 func GetRayImage() string {
-	return lookupEnvOrDefault(KuberayTestRayImage, RayImage)
-}
-
-func lookupEnvOrDefault(key, value string) string {
-	if v, ok := os.LookupEnv(key); ok {
-		return v
-	}
-	return value
-}
-
-func GetRayVersionForAutoScalerV2() string {
-	rayVersion := os.Getenv("E2E_AUTOSCALER_V2_TEST_RAY_VERSION")
-	if strings.TrimSpace(rayVersion) == "" {
-		rayVersion = "2.10.0"
-	}
-	return rayVersion
-}
-
-func GetRayImageForAutoScalerV2() string {
-	rayImage := os.Getenv("E2E_AUTOSCALER_V2_TEST_RAY_IMAGE")
-	if strings.TrimSpace(rayImage) == "" {
-		rayImage = "rayproject/ray:2.10.0.ee9422-py310"
-	}
+	rayImage := lookupEnvOrDefault(KuberayTestRayImage, RayImage)
 	// detect if we are running on arm64 machine, most likely apple silicon
 	// the os name is not checked as it also possible that it might be linux
 	// also check if the image does not have the `-aarch64` suffix
@@ -52,4 +30,11 @@ func GetRayImageForAutoScalerV2() string {
 		rayImage = rayImage + "-aarch64"
 	}
 	return rayImage
+}
+
+func lookupEnvOrDefault(key, value string) string {
+	if v, ok := os.LookupEnv(key); ok {
+		return v
+	}
+	return value
 }

@@ -120,7 +120,7 @@ func headPodTemplateApplyConfigurationV2() *corev1ac.PodTemplateSpecApplyConfigu
 			WithRestartPolicy(corev1.RestartPolicyNever).
 			WithContainers(corev1ac.Container().
 				WithName("ray-head").
-				WithImage(GetRayImageForAutoScalerV2()).
+				WithImage(GetRayImage()).
 				WithPorts(
 					corev1ac.ContainerPort().WithName("gcs").WithContainerPort(6379),
 					corev1ac.ContainerPort().WithName("serve").WithContainerPort(8000),
@@ -162,7 +162,7 @@ func workerPodTemplateApplyConfigurationV2() *corev1ac.PodTemplateSpecApplyConfi
 			WithRestartPolicy(corev1.RestartPolicyNever).
 			WithContainers(corev1ac.Container().
 				WithName("ray-worker").
-				WithImage(GetRayImageForAutoScalerV2()).
+				WithImage(GetRayImage()).
 				WithResources(corev1ac.ResourceRequirements().
 					WithRequests(corev1.ResourceList{
 						corev1.ResourceCPU:    resource.MustParse("300m"),
