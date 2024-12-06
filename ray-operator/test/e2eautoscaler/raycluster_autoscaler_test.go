@@ -237,45 +237,47 @@ func TestRayClusterAutoscalerWithDesiredState(t *testing.T) {
 		g.Expect(err).NotTo(gomega.HaveOccurred())
 		test.T().Logf("Created ConfigMap %s/%s successfully", scripts.Namespace, scripts.Name)
 
-		groupName := "custom-resource-group"
-		rayClusterSpecAC := rayv1ac.RayClusterSpec().
-			WithEnableInTreeAutoscaling(true).
-			WithRayVersion(GetRayVersion()).
-			WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
-				WithRayStartParams(map[string]string{"num-cpus": "0"}).
-				WithTemplate(tc.HeadPodTemplateGetter())).
-			WithWorkerGroupSpecs(rayv1ac.WorkerGroupSpec().
-				WithReplicas(0).
-				WithMinReplicas(0).
-				WithMaxReplicas(maxReplica).
-				WithGroupName(groupName).
-				WithRayStartParams(map[string]string{"num-cpus": "1", "resources": `'{"CustomResource": 1}'`}).
-				WithTemplate(tc.WorkerPodTemplateGetter())).
-			WithAutoscalerOptions(rayv1ac.AutoscalerOptions().
-				WithIdleTimeoutSeconds(scaleDownWaitSec))
-		rayClusterAC := rayv1ac.RayCluster("ray-cluster", namespace.Name).
-			WithSpec(apply(rayClusterSpecAC, mountConfigMap[rayv1ac.RayClusterSpecApplyConfiguration](scripts, "/home/ray/test_scripts")))
+		test.T().Run(name, func(_ *testing.T) {
+			groupName := "custom-resource-group"
+			rayClusterSpecAC := rayv1ac.RayClusterSpec().
+				WithEnableInTreeAutoscaling(true).
+				WithRayVersion(GetRayVersion()).
+				WithHeadGroupSpec(rayv1ac.HeadGroupSpec().
+					WithRayStartParams(map[string]string{"num-cpus": "0"}).
+					WithTemplate(tc.HeadPodTemplateGetter())).
+				WithWorkerGroupSpecs(rayv1ac.WorkerGroupSpec().
+					WithReplicas(0).
+					WithMinReplicas(0).
+					WithMaxReplicas(maxReplica).
+					WithGroupName(groupName).
+					WithRayStartParams(map[string]string{"num-cpus": "1", "resources": `'{"CustomResource": 1}'`}).
+					WithTemplate(tc.WorkerPodTemplateGetter())).
+				WithAutoscalerOptions(rayv1ac.AutoscalerOptions().
+					WithIdleTimeoutSeconds(scaleDownWaitSec))
+			rayClusterAC := rayv1ac.RayCluster("ray-cluster", namespace.Name).
+				WithSpec(apply(rayClusterSpecAC, mountConfigMap[rayv1ac.RayClusterSpecApplyConfiguration](scripts, "/home/ray/test_scripts")))
 
-		rayCluster, err := test.Client().Ray().RayV1().RayClusters(namespace.Name).Apply(test.Ctx(), rayClusterAC, TestApplyOptions)
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-		test.T().Logf("%s", name)
-		test.T().Logf("Created RayCluster %s/%s successfully", rayCluster.Namespace, rayCluster.Name)
+			rayCluster, err := test.Client().Ray().RayV1().RayClusters(namespace.Name).Apply(test.Ctx(), rayClusterAC, TestApplyOptions)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			test.T().Logf("Created RayCluster %s/%s successfully", rayCluster.Namespace, rayCluster.Name)
 
-		// Wait for RayCluster to become ready and verify the number of available worker replicas.
-		g.Eventually(RayCluster(test, rayCluster.Namespace, rayCluster.Name), TestTimeoutMedium).
-			Should(gomega.WithTransform(RayClusterState, gomega.Equal(rayv1.Ready)))
-		g.Expect(GetRayCluster(test, rayCluster.Namespace, rayCluster.Name)).To(gomega.WithTransform(RayClusterDesiredWorkerReplicas, gomega.Equal(int32(0))))
+			// Wait for RayCluster to become ready and verify the number of available worker replicas.
+			g.Eventually(RayCluster(test, rayCluster.Namespace, rayCluster.Name), TestTimeoutMedium).
+				Should(gomega.WithTransform(RayClusterState, gomega.Equal(rayv1.Ready)))
+			g.Expect(GetRayCluster(test, rayCluster.Namespace, rayCluster.Name)).To(gomega.WithTransform(RayClusterDesiredWorkerReplicas, gomega.Equal(int32(0))))
 
-		headPod, err := GetHeadPod(test, rayCluster)
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-		test.T().Logf("Found head pod %s/%s", headPod.Namespace, headPod.Name)
+			headPod, err := GetHeadPod(test, rayCluster)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			test.T().Logf("Found head pod %s/%s", headPod.Namespace, headPod.Name)
 
-		// Create a number of tasks and wait for their completion, and a worker in the "custom-resource-group" should be created.
-		ExecPodCmd(test, headPod, common.RayHeadContainer, []string{"python", "/home/ray/test_scripts/create_concurrent_tasks.py"})
+			// Create a number of tasks and wait for their completion, and a worker in the "custom-resource-group" should be created.
+			ExecPodCmd(test, headPod, common.RayHeadContainer, []string{"python", "/home/ray/test_scripts/create_concurrent_tasks.py"})
 
-		// Scale down has been disabled, after ray script execution completion the cluster is expected to have max replica's number of pods.
-		pods, err := GetWorkerPods(test, rayCluster)
-		g.Expect(err).NotTo(gomega.HaveOccurred())
-		g.Expect(pods).To(gomega.HaveLen(maxReplica))
+			// Scale down has been disabled, after ray script execution completion the cluster is expected to have max replica's number of pods.
+			pods, err := GetWorkerPods(test, rayCluster)
+			g.Expect(err).NotTo(gomega.HaveOccurred())
+			g.Expect(pods).To(gomega.HaveLen(maxReplica))
+		})
+
 	}
 }
