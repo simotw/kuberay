@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	rayv1api "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
+
+	"github.com/ray-project/kuberay/ray-operator/test/support"
 )
 
 // TestCreateClusterAutoscalerEndpoint sequentially iterates over the create cluster endpoint
@@ -49,7 +51,7 @@ func TestCreateClusterAutoscaler(t *testing.T) {
 			Name:        tCtx.GetNextName(),
 			Namespace:   tCtx.GetNamespaceName(),
 			User:        "boris",
-			Version:     "2.9.0",
+			Version:     support.GetRayVersion(),
 			Environment: api.Cluster_DEV,
 			ClusterSpec: &api.ClusterSpec{
 				EnableInTreeAutoscaling: true,

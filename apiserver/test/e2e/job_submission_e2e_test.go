@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	api "github.com/ray-project/kuberay/proto/go_client"
+	"github.com/ray-project/kuberay/ray-operator/test/support"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,7 +42,7 @@ func TestCreateJobSubmission(t *testing.T) {
 			Name:        tCtx.GetNextName(),
 			Namespace:   tCtx.GetNamespaceName(),
 			User:        "boris",
-			Version:     "2.9.0",
+			Version:     support.GetRayVersion(),
 			Environment: api.Cluster_DEV,
 			ClusterSpec: &api.ClusterSpec{
 				HeadGroupSpec: &api.HeadGroupSpec{
